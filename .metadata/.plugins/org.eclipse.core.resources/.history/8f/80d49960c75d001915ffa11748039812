@@ -1,0 +1,363 @@
+/*
+ * Copyright (c) 2015, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ *  ======== uartecho.c ========
+ */
+
+/* XDCtools Header files */
+#include <xdc/std.h>
+#include <xdc/runtime/System.h>
+#include <xdc/runtime/Error.h>
+
+/* BIOS Header files */
+#include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Task.h>
+#include <ti/sysbios/knl/Swi.h>
+#include <ti/sysbios/knl/Semaphore.h>
+#include <ti/sysbios/knl/Event.h>
+#include <ti/sysbios/knl/Mailbox.h>
+
+/* TI-RTOS Header files */
+#include <ti/drivers/GPIO.h>
+#include <ti/drivers/UART.h>
+
+/* Example/Board Header files */
+#include "Board.h"
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+
+#include "driverlib/fpu.h"
+#include "driverlib/gpio.h"
+#include "driverlib/flash.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/systick.h"
+#include "driverlib/uart.h"
+#include "driverlib/udma.h"
+#include "driverlib/rom.h"
+#include "driverlib/rom_map.h"
+#include "driverlib/debug.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/pin_map.h"
+
+#include "grlib/grlib.h"
+#include "grlib/widget.h"
+#include "grlib/canvas.h"
+#include "grlib/checkbox.h"
+#include "grlib/container.h"
+#include "grlib/pushbutton.h"
+#include "grlib/radiobutton.h"
+#include "grlib/slider.h"
+#include "Kentec320x240x16_ssd2119_spi.h"
+
+#define TASKSTACKSIZE     768
+
+Task_Struct task0Struct;
+Char task0Stack[TASKSTACKSIZE];
+
+//****************************************************************************
+//
+// My added ones
+//
+//****************************************************************************
+uint32_t g_ui32SysClock;
+tContext sContext;
+char message[35];
+int pos = 0;
+char input;
+Swi_Handle swi0;
+UART_Handle uart;
+Task_Struct task1Struct;
+Char task1Stack[TASKSTACKSIZE];
+
+Task_Params taskParams;
+Task_Handle task1;
+
+Semaphore_Handle Sem;
+
+Event_Handle myEvent;
+
+Mailbox_Handle mailBox;
+
+//*****************************************************************************
+//
+// Forward declarations for the globals required to define the widgets at
+// compile-time.
+//
+//*****************************************************************************
+void OnIntroPaint(tWidget *psWidget, tContext *psContext);
+extern tCanvasWidget g_psPanels[];
+
+//*****************************************************************************
+//
+// The first panel, which contains introductory text explaining the
+// application.
+//
+//*****************************************************************************
+Canvas(g_sIntroduction, 0, 0, 0, &g_sKentec320x240x16_SSD2119, 0, 24,
+       320, 166, (CANVAS_STYLE_FILL | CANVAS_STYLE_TEXT), 0, 0,ClrWhite, &g_sFontCm20, message, 0, 0);
+
+void lcdPrint(UArg arg0, UArg arg1){
+    UInt events;
+    char buf;
+    char fromMail[35];
+    int mailPos = 0;
+
+    while(1){
+        /* Wait for ANY of the ISR events to be posted */
+        //If its for space and carrage char, move the 3rd arg to 2nd and 2nd to 3rd.
+         events = Event_pend(myEvent, Event_Id_NONE,Event_Id_00 + Event_Id_01,BIOS_WAIT_FOREVER);
+
+         /* Process all the events that have occurred */
+         if (events & Event_Id_00) {
+             //Event_Id_00 is for space
+
+             //Loop through number of avaliable message and store in a message array
+             int i;
+             for(i = 0;i<Mailbox_getNumPendingMsgs(mailBox);i++){
+                 Mailbox_pend(mailBox,&buf,BIOS_NO_WAIT);
+                 fromMail[mailPos] = buf;
+                 mailPos++;
+             }
+             char newline[] = "\r\n";
+             UART_writePolling(uart,&fromMail,mailPos);
+             UART_writePolling(uart,&newline,2);
+         }
+         if (events & Event_Id_01) {
+              //Event_Id_01 is for return character
+
+             //Dont think you are meant to do this as what was the point of brining message in throught he mailbox if you could have grabbed it from message anyway
+             WidgetPaint((tWidget*) &g_sIntroduction);
+             WidgetMessageQueueProcess();
+
+             //clear message
+             int i;
+             for(i = 0;i<pos;i++){
+                 message[i] = '\x00';
+             }
+             pos = 0;
+         }
+    }
+}
+
+    //Task_exit();
+
+void writeSpace(UART_Handle handle){
+    char newline[] = "\r\n";
+    UART_writePolling(uart,&message,35);
+    UART_writePolling(uart,&newline,2);
+}
+
+
+
+void readCallback(UART_Handle handle, void *buffer, size_t num)
+{
+    //Like removing the interrupt from before
+    UART_readCancel(handle);
+
+    //Add inputs to message array
+    message[pos] = input;
+    pos++;
+
+    //Could change 3rd arg so it will block until a buffer is free in mailbox
+    //This adds the input to the mailbox
+    Mailbox_post(mailBox,&input,BIOS_NO_WAIT);
+
+    //Set the correct events
+    if(input == ' '){
+        Event_post(myEvent, Event_Id_00);
+    }
+    if(input == '\r'){
+        Event_post(myEvent, Event_Id_01);
+    }
+
+    //This unblocks the task
+    Semaphore_post(Sem);
+}
+
+/*
+ *  ======== echoFxn ========
+ *  Task for this function is created statically. See the project's .cfg file.
+ */
+Void echoFxn(UArg arg0, UArg arg1)
+{
+    UART_Params uartParams;
+    const char echoPrompt[] = "\fEchoing characters:\r\n";
+
+    /* Create a UART with data processing off. */
+    UART_Params_init(&uartParams);
+    uartParams.writeDataMode = UART_DATA_BINARY;
+    uartParams.readDataMode = UART_DATA_BINARY;
+    uartParams.readReturnMode = UART_RETURN_FULL;
+    uartParams.readEcho = UART_ECHO_OFF;
+    uartParams.baudRate = 9600;
+    //uartParams.writeMode = UART_MODE_CALLBACK;
+    uartParams.readMode = UART_MODE_CALLBACK;
+    //uartParams.writeCallback =  &writeCallback;
+    uartParams.readCallback =  &readCallback;
+    uart = UART_open(Board_UART0, &uartParams);
+
+    if (uart == NULL) {
+        System_abort("Error opening the UART");
+    }
+
+    Error_Block eb;
+    Error_init(&eb);
+
+    Swi_Params swiParams;
+
+    //how are you meant to set this up
+    //swiParams.arg0 = *uart;
+
+    Swi_Params_init(&swiParams);
+
+    //Why couldnt i use the GUI for this?
+    swi0 = Swi_create((Swi_FuncPtr)writeSpace, &swiParams, &eb);
+
+    UART_write(uart, echoPrompt, sizeof(echoPrompt));
+
+    /* Loop forever echoing */
+    while (1) {
+        UART_read(uart, &input, 1);
+
+        //if(Semaphore_pend(Sem, BIOS_WAIT_FOREVER) == TRUE){
+            Task_yield();
+        //}
+
+    }
+}
+
+/*
+ *  ======== main ========
+ */
+int main(void)
+{
+    //
+    // Set the clocking to run directly from the crystal at 120MHz.
+    //
+    g_ui32SysClock = MAP_SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ |
+                                             SYSCTL_OSC_MAIN |
+                                             SYSCTL_USE_PLL |
+                                             SYSCTL_CFG_VCO_480), 120000000);
+
+    //
+    // Initialize the display driver.
+    //
+    Kentec320x240x16_SSD2119Init(g_ui32SysClock);
+
+    //
+    // Initialize the graphics context.
+    //
+    GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
+
+    //
+    // Enable processor interrupts.
+    //
+    MAP_IntMasterEnable();
+
+    GrContextFontSet(&sContext, &g_sFontCm20);
+
+
+    /* Call board init functions */
+    Board_initGeneral();
+    Board_initGPIO();
+    Board_initUART();
+
+    //
+    // Enable the UART interrupt.
+    //
+    MAP_IntEnable(INT_UART0);
+    MAP_UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
+
+    WidgetAdd(WIDGET_ROOT,(tWidget*) &g_sIntroduction);
+    // Issue the initial paint request to the widgets.
+    WidgetPaint(WIDGET_ROOT);
+
+
+    /* Construct BIOS objects */
+    Task_Params taskParams;
+
+    Task_Params_init(&taskParams);
+    taskParams.stackSize = TASKSTACKSIZE;
+    taskParams.stack = &task0Stack;
+    taskParams.instance->name = "echo";
+    Task_construct(&task0Struct, (Task_FuncPtr)echoFxn, &taskParams, NULL);
+
+    //My sem stuff
+    Sem = Semaphore_create(0, NULL, NULL);
+
+    //My task stuff
+    Task_Params_init(&taskParams);
+    taskParams.stackSize = TASKSTACKSIZE;
+    taskParams.stack = &task1Stack;
+    taskParams.priority = 1;
+    task1 = Task_create((Task_FuncPtr)lcdPrint, &taskParams, NULL );
+
+    //My Event stuff
+    Error_Block eb;
+    Error_init(&eb);
+
+    myEvent = Event_create(NULL, &eb);
+
+    //My mailbox stuff
+//    Mailbox_Params mailBoxParams;
+//    Mailbox_Params_init(&mailBoxParams);
+
+    //35 buffers, each 1 length
+    mailBox = Mailbox_create(1,35,NULL,NULL);
+
+
+    /* Turn on user LED */
+    GPIO_write(Board_LED0, Board_LED_ON);
+
+    /* This example has logging and many other debug capabilities enabled */
+    System_printf("This example does not attempt to minimize code or data "
+                  "footprint\n");
+    System_flush();
+
+    System_printf("Starting the UART Echo example\nSystem provider is set to "
+                  "SysMin. Halt the target to view any SysMin contents in "
+                  "ROV.\n");
+    /* SysMin will only print to the console when you call flush or exit */
+    System_flush();
+
+    /* Start BIOS */
+    BIOS_start();
+
+    return (0);
+}
