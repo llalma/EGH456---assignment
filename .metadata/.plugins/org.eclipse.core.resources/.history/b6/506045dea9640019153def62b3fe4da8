@@ -1,0 +1,246 @@
+/*
+ *  ======== Assignment.c ========
+ */
+
+/* XDCtools Header files */
+#include <xdc/std.h>
+#include <xdc/runtime/System.h>
+#include <xdc/runtime/Error.h>
+#include <xdc/runtime/Types.h>
+
+/* BIOS Header files */
+#include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Task.h>
+#include <ti/sysbios/knl/Swi.h>
+#include <ti/sysbios/knl/Semaphore.h>
+
+/* TI-RTOS Header files */
+#include <ti/drivers/GPIO.h>
+#include <ti/drivers/UART.h>
+#include <ti/drivers/I2C.h>
+
+/* Example/Board Header files */
+#include "Board.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+
+/* Graphics Library */
+#include "grlib/grlib.h"
+#include "grlib/widget.h"
+#include "grlib/canvas.h"
+#include "grlib/checkbox.h"
+#include "grlib/container.h"
+#include "grlib/pushbutton.h"
+#include "grlib/radiobutton.h"
+#include "grlib/slider.h"
+
+/* driver Libraries */
+#include "drivers/pinout.h"
+#include "drivers/buttons.h"
+#include "drivers/opt3001.h"
+#include "drivers/Kentec320x240x16_ssd2119_spi.h"
+
+
+//****************************************************************************
+//
+// Globals
+//
+//****************************************************************************
+
+/* Clock settings */
+uint32_t g_ui32SysClock;
+
+/* LCD screen- notsure what this is? */
+tContext sContext;
+
+/* UART Handling */
+UART_Handle uart;
+
+/* I2C light sensor handle */
+I2C_Handle      I2C_Light;
+
+#define TASKSTACKSIZE       5000
+
+Task_Struct task0Struct;
+Char task0Stack[TASKSTACKSIZE];
+
+//*****************************************************************************
+//
+// Forward declarations for the globals required to define the widgets at
+// compile-time.
+//
+//*****************************************************************************
+void OnIntroPaint(tWidget *psWidget, tContext *psContext);
+extern tCanvasWidget g_psPanels[];
+
+
+//*****************************************************************************
+//
+// The first panel, which contains introductory text explaining the
+// application.
+//
+//*****************************************************************************
+Canvas(g_sIntroduction, 0, 0, 0, &g_sKentec320x240x16_SSD2119, 0, 24,
+       320, 166, (CANVAS_STYLE_FILL | CANVAS_STYLE_TEXT), 0, 0,ClrWhite, &g_sFontCm20, "LCD Working", 0, 0);
+
+
+
+/*
+ *  ======== UART Init ========
+ */
+
+void UART_setup(){
+    //Setup UART in interrupt mode.
+    //the read& write callback is the functions called when interupt occours
+
+    Board_initUART();
+
+    UART_Params uartParams;
+
+    /* Create a UART with data processing off. */
+    UART_Params_init(&uartParams);
+    uartParams.writeDataMode = UART_DATA_BINARY;
+    uartParams.readDataMode = UART_DATA_BINARY;
+    uartParams.readReturnMode = UART_RETURN_FULL;
+    uartParams.readEcho = UART_ECHO_OFF;
+    uartParams.baudRate = 9600;
+    //uartParams.writeMode = UART_MODE_CALLBACK;
+    //uartParams.readMode = UART_MODE_CALLBACK;
+    //uartParams.writeCallback =  &writeCallback;
+    //uartParams.readCallback =  &readCallback;
+    uart = UART_open(Board_UART0, &uartParams);
+
+    //UART_writePolling(uart, "UART Enabled", 12);
+}
+
+void LCD_Setup(Types_FreqHz cpufreq){
+    //Set up Touch Screen
+
+    //
+    // Initialize the display driver.
+    //
+    Kentec320x240x16_SSD2119Init(cpufreq.lo);
+
+    //
+    // Initialize the graphics context.
+    //
+    GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
+
+    WidgetAdd(WIDGET_ROOT,(tWidget*) &g_sIntroduction);
+    // Issue the initial paint request to the widgets.
+    WidgetPaint(WIDGET_ROOT);
+}
+
+/*
+ *  ======== taskFxn ========
+ *  Task for this function is created statically. See the project's .cfg file.
+ */
+Void taskFxn(UArg arg0, UArg arg1)
+{
+    I2C_Params      i2cParams;
+    I2C_Transaction i2cTransaction;
+    uint16_t result = 0;
+    float convertedLux = 0;
+    char      tempStr[40];
+
+    /* Create I2C for usage */
+    I2C_Params_init(&i2cParams);
+    i2cParams.bitRate = I2C_400kHz;
+    i2cParams.transferMode = I2C_MODE_CALLBACK;
+    I2C_Light = I2C_open(Board_I2C0 , &i2cParams);
+    if (I2C_Light == NULL) {
+        System_abort("Error Initializing I2C\n");
+    }
+    else {
+        System_printf("I2C Initialized!\n");
+    }
+
+    uint16_t buf[1];
+    buf[0] = 0x10C4;
+
+    i2cTransaction.writeBuf = buf;
+    i2cTransaction.writeCount = 1;
+    i2cTransaction.readBuf = NULL;
+    i2cTransaction.readCount = 0;
+    i2cTransaction.slaveAddress = 0x01;
+
+    I2C_transfer(I2C_Light, &i2cTransaction);
+
+    //Change Transaction so read only from result reg
+    i2cTransaction.writeBuf = NULL;
+    i2cTransaction.writeCount = 0;
+    i2cTransaction.readBuf = &result;
+    i2cTransaction.readCount = 8;
+    i2cTransaction.slaveAddress = 0x00;
+
+
+
+     while(1){
+         I2C_transfer(I2C_Light, &i2cTransaction);
+
+         SensorOpt3001Convert(result, &convertedLux);
+
+//       SensorOpt3001ReadLight(&rawData);
+//       SensorOpt3001Convert(rawData, &convertedLux);
+       sprintf(tempStr, "Lux: %5.2f\n\r", convertedLux);
+
+       UART_writePolling(uart, tempStr, 12);
+
+       WidgetMessageQueueProcess();
+
+       Task_sleep(2000);
+
+   }
+}
+
+/*
+ *  ======== main ========
+ */
+int main(void)
+{
+    //
+    // Set the clocking to run directly from the crystal at 120MHz.
+    //
+    Types_FreqHz cpufreq;
+    BIOS_getCpuFreq(&cpufreq);
+
+    /* Call board init functions */
+    Board_initGeneral();
+    Board_initGPIO();
+    Board_initI2C();
+    OPT3001_init();
+
+    UART_setup();
+    LCD_Setup(cpufreq);
+
+
+
+    /* Construct tmp006 Task thread */
+   Task_Params taskParams;
+   Task_Params_init(&taskParams);
+   taskParams.stackSize = TASKSTACKSIZE;
+   taskParams.stack = &task0Stack;
+   Task_construct(&task0Struct, (Task_FuncPtr)taskFxn, &taskParams, NULL);
+
+   /* Turn on user LED */
+   GPIO_write(Board_LED0, Board_LED_ON);
+
+   System_printf("Starting the I2C example\nSystem provider is set to SysMin."
+                 " Halt the target to view any SysMin contents in ROV.\n");
+   /* SysMin will only print to the console when you call flush or exit */
+   System_flush();
+
+   /* Start BIOS */
+   BIOS_start();
+
+
+
+   return 0;
+
+
+}

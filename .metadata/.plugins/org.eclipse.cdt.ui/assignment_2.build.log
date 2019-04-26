@@ -5,7 +5,18 @@
  
 making ../src/sysbios/sysbios.aem4f ...
 gmake[1]: Nothing to be done for 'all'.
+Building file: "../Assignment.c"
+Invoking: ARM Compiler
+"C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.4.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/driverlib" --include_path="C:/Users/Liam Hulsman-Benson/Documents/GitHub/EGH456---assignment/assignment_2" --include_path="C:/Users/Liam Hulsman-Benson/Documents/GitHub/EGH456---assignment/assignment_2" --include_path="C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b" --include_path="C:/ti/tirtos_tivac_2_16_00_08/products/bios_6_45_01_29/packages/ti/sysbios/posix" --include_path="C:/ti/tivaware_c_series_2_1_4_178/examples/boards/ek-tm4c1294xl-boostxl-kentec-s1/drivers" --include_path="C:/ti/tivaware_c_series_2_1_4_178/driverlib" --include_path="C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.4.LTS/include" --define=ccs="ccs" --define=PART_TM4C1294NCPDT --define=ccs --define=TIVAWARE -g --gcc --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on --abi=eabi --preproc_with_compile --preproc_dependency="Assignment.d_raw" --cmd_file="configPkg/compiler.opt" "../Assignment.c"
+Finished building: "../Assignment.c"
+ 
 making ../src/sysbios/sysbios.aem4f ...
 gmake[2]: Nothing to be done for 'all'.
+Building target: "assignment_2.out"
+Invoking: ARM Linker
+"C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.4.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --define=ccs="ccs" --define=PART_TM4C1294NCPDT --define=ccs --define=TIVAWARE -g --gcc --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on --abi=eabi -z -m"assignment_2.map" --heap_size=0 --stack_size=10024 -i"C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.4.LTS/lib" -i"C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.4.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="assignment_2_linkInfo.xml" --rom_model -o "assignment_2.out" "./Assignment.obj" "./EK_TM4C1294XL.obj" "./drivers/Kentec320x240x16_ssd2119_spi.obj" "./drivers/buttons.obj" "./drivers/i2cOptDriver.obj" "./drivers/opt3001.obj" "./drivers/pinout.obj" "../EK_TM4C1294XL.cmd" -l"configPkg/linker.cmd" -l"C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/driverlib/ccs/Debug/driverlib.lib" -l"C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/grlib/ccs/Debug/grlib.lib" -l"C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/usblib/ccs/Debug/usblib.lib" -l"C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/driverlib/ccs/Debug/driverlib.lib" -llibc.a 
+<Linking>
+Finished building target: "assignment_2.out"
+ 
 
 **** Build Finished ****
