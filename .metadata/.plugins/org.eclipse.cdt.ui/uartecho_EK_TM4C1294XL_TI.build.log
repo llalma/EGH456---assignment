@@ -1,0 +1,68 @@
+
+**** Build of configuration Debug for project uartecho_EK_TM4C1294XL_TI ****
+
+"C:\\ti\\ccs901\\ccs\\utils\\bin\\gmake" -k -j 8 all -O 
+ 
+Building file: "../uartecho.cfg"
+Invoking: XDCtools
+"C:/ti/xdctools_3_32_00_06_core/xs" --xdcpath="C:/ti/tirtos_tivac_2_16_00_08/packages;C:/ti/tirtos_tivac_2_16_00_08/products/tidrivers_tivac_2_16_00_08/packages;C:/ti/tirtos_tivac_2_16_00_08/products/bios_6_45_01_29/packages;C:/ti/tirtos_tivac_2_16_00_08/products/ndk_2_25_00_09/packages;C:/ti/tirtos_tivac_2_16_00_08/products/uia_2_00_05_50/packages;C:/ti/tirtos_tivac_2_16_00_08/products/ns_1_11_00_10/packages;" xdc.tools.configuro -o configPkg -t ti.targets.arm.elf.M4F -p ti.platforms.tiva:TM4C1294NCPDT -r release -c "C:/ti/ccs901/ccs/tools/compiler/ti-cgt-arm_18.12.1.LTS" --compileOptions "-mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path=\"C:/EBG349_ws/Tute/RTOS/uartecho_EK_TM4C1294XL_TI\" --include_path=\"C:/EBG349_ws/Tute/RTOS/uartecho_EK_TM4C1294XL_TI\" --include_path=\"C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b\" --include_path=\"C:/ti/tirtos_tivac_2_16_00_08/products/bios_6_45_01_29/packages/ti/sysbios/posix\" --include_path=\"C:/ti/tivaware_c_series_2_1_4_178/examples/boards/ek-tm4c1294xl-boostxl-kentec-s1/drivers\" --include_path=\"C:/ti/tivaware_c_series_2_1_4_178/driverlib\" --include_path=\"C:/ti/ccs901/ccs/tools/compiler/ti-cgt-arm_18.12.1.LTS/include\" --define=ccs=\"ccs\" --define=PART_TM4C1294NCPDT --define=ccs --define=TIVAWARE -g --gcc --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on --abi=eabi  " "../uartecho.cfg"
+making package.mak (because of package.bld) ...
+generating interfaces for package configPkg (because package/package.xdc.inc is older than package.xdc) ...
+configuring uartecho.xem4f from package/cfg/uartecho_pem4f.cfg ...
+generating custom ti.sysbios library makefile ... 
+Starting build of library sources ...
+making C:/EBG349_ws/Tute/RTOS/uartecho_EK_TM4C1294XL_TI/src/sysbios/sysbios.aem4f ...
+gmake[1]: Entering directory `C:/EBG349_ws/Tute/RTOS/uartecho_EK_TM4C1294XL_TI/src/sysbios'
+clem4f C:/ti/tirtos_tivac_2_16_00_08/products/bios_6_45_01_29/packages/ti/sysbios/BIOS.c ...
+asmem4f C:/ti/tirtos_tivac_2_16_00_08/products/bios_6_45_01_29/packages/ti/sysbios/family/arm/m3/Hwi_asm.sv7M ...
+asmem4f C:/ti/tirtos_tivac_2_16_00_08/products/bios_6_45_01_29/packages/ti/sysbios/family/arm/m3/Hwi_asm_switch.sv7M ...
+asmem4f C:/ti/tirtos_tivac_2_16_00_08/products/bios_6_45_01_29/packages/ti/sysbios/family/arm/m3/IntrinsicsSupport_asm.sv7M ...
+asmem4f C:/ti/tirtos_tivac_2_16_00_08/products/bios_6_45_01_29/packages/ti/sysbios/family/arm/m3/TaskSupport_asm.sv7M ...
+arem4f BIOS.obj m3_Hwi_asm.obj m3_Hwi_asm_switch.obj m3_IntrinsicsSupport_asm.obj m3_TaskSupport_asm.obj ...
+gmake[1]: Leaving directory `C:/EBG349_ws/Tute/RTOS/uartecho_EK_TM4C1294XL_TI/src/sysbios'
+Build of libraries done.
+clem4f package/cfg/uartecho_pem4f.c ...
+"package/cfg/uartecho_pem4f.c", line 19773: warning #112-D: statement is unreachable
+"package/cfg/uartecho_pem4f.c", line 20259: warning #112-D: statement is unreachable
+"package/cfg/uartecho_pem4f.c", line 20494: warning #112-D: statement is unreachable
+"package/cfg/uartecho_pem4f.c", line 20714: warning #112-D: statement is unreachable
+"package/cfg/uartecho_pem4f.c", line 20895: warning #112-D: statement is unreachable
+Finished building: "../uartecho.cfg"
+ 
+        1 file(s) copied.
+making ../src/sysbios/sysbios.aem4f ...
+gmake[1]: Nothing to be done for 'all'.
+Building file: "../uartecho.c"
+Invoking: ARM Compiler
+"C:/ti/ccs901/ccs/tools/compiler/ti-cgt-arm_18.12.1.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/EBG349_ws/Tute/RTOS/uartecho_EK_TM4C1294XL_TI" --include_path="C:/EBG349_ws/Tute/RTOS/uartecho_EK_TM4C1294XL_TI" --include_path="C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b" --include_path="C:/ti/tirtos_tivac_2_16_00_08/products/bios_6_45_01_29/packages/ti/sysbios/posix" --include_path="C:/ti/tivaware_c_series_2_1_4_178/examples/boards/ek-tm4c1294xl-boostxl-kentec-s1/drivers" --include_path="C:/ti/tivaware_c_series_2_1_4_178/driverlib" --include_path="C:/ti/ccs901/ccs/tools/compiler/ti-cgt-arm_18.12.1.LTS/include" --define=ccs="ccs" --define=PART_TM4C1294NCPDT --define=ccs --define=TIVAWARE -g --gcc --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on --abi=eabi --preproc_with_compile --preproc_dependency="uartecho.d_raw" --cmd_file="configPkg/compiler.opt" "../uartecho.c"
+Finished building: "../uartecho.c"
+ 
+Building file: "../EK_TM4C1294XL.c"
+Invoking: ARM Compiler
+"C:/ti/ccs901/ccs/tools/compiler/ti-cgt-arm_18.12.1.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="C:/EBG349_ws/Tute/RTOS/uartecho_EK_TM4C1294XL_TI" --include_path="C:/EBG349_ws/Tute/RTOS/uartecho_EK_TM4C1294XL_TI" --include_path="C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b" --include_path="C:/ti/tirtos_tivac_2_16_00_08/products/bios_6_45_01_29/packages/ti/sysbios/posix" --include_path="C:/ti/tivaware_c_series_2_1_4_178/examples/boards/ek-tm4c1294xl-boostxl-kentec-s1/drivers" --include_path="C:/ti/tivaware_c_series_2_1_4_178/driverlib" --include_path="C:/ti/ccs901/ccs/tools/compiler/ti-cgt-arm_18.12.1.LTS/include" --define=ccs="ccs" --define=PART_TM4C1294NCPDT --define=ccs --define=TIVAWARE -g --gcc --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on --abi=eabi --preproc_with_compile --preproc_dependency="EK_TM4C1294XL.d_raw" --cmd_file="configPkg/compiler.opt" "../EK_TM4C1294XL.c"
+Finished building: "../EK_TM4C1294XL.c"
+ 
+making ../src/sysbios/sysbios.aem4f ...
+gmake[2]: Nothing to be done for 'all'.
+Building target: "uartecho_EK_TM4C1294XL_TI.out"
+Invoking: ARM Linker
+"C:/ti/ccs901/ccs/tools/compiler/ti-cgt-arm_18.12.1.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --define=ccs="ccs" --define=PART_TM4C1294NCPDT --define=ccs --define=TIVAWARE -g --gcc --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on --abi=eabi -z -m"uartecho_EK_TM4C1294XL_TI.map" --heap_size=0 --stack_size=10024 -i"C:/ti/ccs901/ccs/tools/compiler/ti-cgt-arm_18.12.1.LTS/lib" -i"C:/ti/ccs901/ccs/tools/compiler/ti-cgt-arm_18.12.1.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="uartecho_EK_TM4C1294XL_TI_linkInfo.xml" --rom_model -o "uartecho_EK_TM4C1294XL_TI.out" "./EK_TM4C1294XL.obj" "./uartecho.obj" "../EK_TM4C1294XL.cmd" -l"configPkg/linker.cmd" -l"C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/grlib/ccs/Debug/grlib.lib" -l"C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/usblib/ccs/Debug/usblib.lib" -l"C:/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/driverlib/ccs/Debug/driverlib.lib" -l"C:/ti/tivaware_c_series_2_1_4_178/driverlib/ccs/Debug/driverlib.lib" -llibc.a 
+<Linking>
+warning #10229-D: output section ".data" refers to load symbol "g_sKentec320x240x16_SSD2119" and hence cannot be compressed; compression "lzss" is ignored
+ 
+ undefined                    first referenced
+  symbol                          in file     
+ ---------                    ----------------
+ Kentec320x240x16_SSD2119Init ./uartecho.obj  
+ g_sKentec320x240x16_SSD2119  ./uartecho.obj  
+ 
+error #10234-D: unresolved symbols remain
+error #10010: errors encountered during linking; "uartecho_EK_TM4C1294XL_TI.out" not built
+ 
+>> Compilation failure
+makefile:146: recipe for target 'uartecho_EK_TM4C1294XL_TI.out' failed
+gmake[1]: *** [uartecho_EK_TM4C1294XL_TI.out] Error 1
+makefile:142: recipe for target 'all' failed
+gmake: *** [all] Error 2
+
+**** Build Finished ****

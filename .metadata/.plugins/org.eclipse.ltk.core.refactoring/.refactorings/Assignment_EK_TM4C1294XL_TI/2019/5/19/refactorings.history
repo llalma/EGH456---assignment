@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;Assignment_EK_TM4C1294XL_TI/pwmled.c&apos; to &apos;PWM_gen.c&apos;" description="Rename resource &apos;pwmled.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="pwmled.c" name="PWM_gen.c" stamp="1557281890228" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;Assignment_EK_TM4C1294XL_TI/grlib_demo.c&apos; to &apos;grlib_demo.h&apos;" description="Rename resource &apos;grlib_demo.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="grlib_demo.c" name="grlib_demo.h" stamp="1557283828131" updateReferences="true"/>
+</session>
