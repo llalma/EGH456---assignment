@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete 15 resources" deleteContents="false" description="Delete 15 resources" element1="/blinky" element10="/senshub_iot" element11="/timers" element12="/Tute" element13="/uart_echo" element14="/uartecho_EK_TM4C1294XL_TI" element15="/uartecho_EK_TM4C1294XL_TI2_week5" element2="/compdcm_mpu9150" element3="/event_EK_TM4C1294XL_TI" element4="/gpiointerrupt_EK_TM4C1294XL_TI" element5="/grlib_demo" element6="/hello" element7="/hibernate" element8="/light_isl29023" element9="/PriorityInversion_EGH456_2017s1" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="15" stamp="1557805296347"/>
+</session>
